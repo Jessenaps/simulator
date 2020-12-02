@@ -22,6 +22,8 @@ class Game
 
     Tank& find_closest_enemy(Tank& current_tank);
 
+    //dit is een test bericht
+
     void mouse_up(int button)
     { /* implement if you want to detect mouse button presses */
     }
