@@ -25,7 +25,7 @@ static float duration;
 static Surface* background_img = new Surface("assets/Background_Grass.png");
 static Surface* tank_red_img = new Surface("assets/Tank_Proj2.png");
 static Surface* tank_blue_img = new Surface("assets/Tank_Blue_Proj2.png");
-static Surface* rocket_red_img = new Surface("assets/Rocket_Proj2.png");
+static Surface* rocket_red_img = new Surface("assets/Rocket_Proj2.png"); 
 static Surface* rocket_blue_img = new Surface("assets/Rocket_Blue_Proj2.png");
 static Surface* particle_beam_img = new Surface("assets/Particle_Beam.png");
 static Surface* smoke_img = new Surface("assets/Smoke.png");
