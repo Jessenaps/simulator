@@ -40,7 +40,8 @@ class ThreadPool
     template <class T>
     auto enqueue(T task) -> std::future<decltype(task())>
     {
-        //Wrap the function in a packaged_task so we can return a future object
+        //Wrap the function in a packaged_task so we can return a 
+        object
         auto wrapper = std::make_shared<std::packaged_task<decltype(task())()>>(std::move(task));
 
         //Scope to restrict critical section
