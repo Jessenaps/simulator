@@ -58,6 +58,9 @@ class Game
     vector<Explosion> explosions;
     vector<Particle_beam> particle_beams;
 
+    // spatial map
+    /*map<vec2, Tank&> spatial_map;*/
+
     Font* frame_count_font;
     long long frame_count = 0;
 
