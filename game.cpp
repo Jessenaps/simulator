@@ -161,6 +161,7 @@ void Game::update(float deltaTime)
     //    task.wait();
     //}
 
+
 }
 
 void Game::update_particle_beams()
