@@ -43,10 +43,10 @@ static Sprite particle_beam_sprite(particle_beam_img, 3);
 const static vec2 tank_size(14, 18);
 const static vec2 rocket_size(25, 24);
 
+mutex rockets_mutex;
+
 const static float tank_radius = 8.5f;
 const static float rocket_radius = 10.f;
-
-const ThreadPool* threadpool;
 
 // -----------------------------------------------------------
 // Initialize the application
@@ -128,40 +128,17 @@ Tank& Game::find_closest_enemy(Tank& current_tank)
 // -----------------------------------------------------------
 void Game::update(float deltaTime)
 {
-   
-    threadpool->enqueue(update_tanks());
+    vector<future<void>> tasks;
+    tasks.push_back(threadpool->enqueue([this] { update_tanks(); }));
+    tasks.push_back(threadpool->enqueue([this] { update_rockets(); }));
 
-    //Update smoke plumes
+
+    //update smoke plumes
     for (Smoke& smoke : smokes)
     {
         smoke.tick();
     }
 
-    //Update rockets
-    for (Rocket& rocket : rockets)
-    {
-        rocket.tick();
-
-        //Check if rocket collides with enemy tank, spawn explosion and if tank is destroyed spawn a smoke plume
-        for (Tank& tank : tanks)
-        {
-            if (tank.active && (tank.allignment != rocket.allignment) && rocket.intersects(tank.position, tank.collision_radius))
-            {
-                explosions.push_back(Explosion(&explosion, tank.position));
-
-                if (tank.hit(ROCKET_HIT_VALUE))
-                {
-                    smokes.push_back(Smoke(smoke, tank.position - vec2(0, 48)));
-                }
-
-                rocket.active = false;
-                break;
-            }
-        }
-    }
-
-    //Remove exploded rockets with remove erase idiom
-    rockets.erase(std::remove_if(rockets.begin(), rockets.end(), [](const Rocket& rocket) { return !rocket.active; }), rockets.end());
 
     //Update particle beams
     for (Particle_beam& particle_beam : particle_beams)
@@ -188,6 +165,38 @@ void Game::update(float deltaTime)
     }
 
     explosions.erase(std::remove_if(explosions.begin(), explosions.end(), [](const Explosion& explosion) { return explosion.done(); }), explosions.end());
+}
+
+void Game::update_rockets()
+{
+    //Update rockets
+    rockets_mutex.lock();
+    for (Rocket& rocket : rockets)
+    {
+        rocket.tick();
+
+        //Check if rocket collides with enemy tank, spawn explosion and if tank is destroyed spawn a smoke plume
+        for (Tank& tank : tanks)
+        {
+            if (tank.active && (tank.allignment != rocket.allignment) && rocket.intersects(tank.position, tank.collision_radius))
+            {
+                explosions.push_back(Explosion(&explosion, tank.position));
+
+                if (tank.hit(ROCKET_HIT_VALUE))
+                {
+                    smokes.push_back(Smoke(smoke, tank.position - vec2(0, 48)));
+                }
+
+                rocket.active = false;
+                break;
+            }
+        }
+    }
+
+    //Remove exploded rockets with remove erase idiom
+    rockets.erase(std::remove_if(rockets.begin(), rockets.end(), [](const Rocket& rocket) { return !rocket.active; }), rockets.end());
+    rockets_mutex.unlock();
+
 }
 
 void Game::update_tanks()
@@ -222,7 +231,10 @@ void Game::update_tanks()
             {
                 Tank& target = find_closest_enemy(tank);
 
+                // wtf dit moet locken
+                rockets_mutex.lock();
                 rockets.push_back(Rocket(tank.position, (target.get_position() - tank.position).normalized() * 3, rocket_radius, tank.allignment, ((tank.allignment == RED) ? &rocket_red : &rocket_blue)));
+                rockets_mutex.unlock();
 
                 tank.reload_rocket();
             }
@@ -249,10 +261,12 @@ void Game::draw()
             background.get_buffer()[(int)tPos.x + (int)tPos.y * SCRWIDTH] = sub_blend(background.get_buffer()[(int)tPos.x + (int)tPos.y * SCRWIDTH], 0x808080);
     }
 
+    rockets_mutex.lock();
     for (Rocket& rocket : rockets)
     {
         rocket.draw(screen);
     }
+    rockets_mutex.unlock();
 
     for (Smoke& smoke : smokes)
     {

@@ -59,6 +59,9 @@ class Game
     long long frame_count = 0;
 
     bool lock_update = false;
+
+    ThreadPool* threadpool;
+
 };
 
 }; // namespace Tmpl8
