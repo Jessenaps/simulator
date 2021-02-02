@@ -75,12 +75,16 @@ void Game::init()
     //Spawn blue tanks
     for (int i = 0; i < NUM_TANKS_BLUE; i++)
     {
-        tanks.push_back(Tank(start_blue_x + ((i % max_rows) * spacing), start_blue_y + ((i / max_rows) * spacing), BLUE, &tank_blue, &smoke, 1200, 600, tank_radius, TANK_MAX_HEALTH, TANK_MAX_SPEED));
+        Tank new_tank = Tank(start_blue_x + ((i % max_rows) * spacing), start_blue_y + ((i / max_rows) * spacing), BLUE, &tank_blue, &smoke, 1200, 600, tank_radius, TANK_MAX_HEALTH, TANK_MAX_SPEED);
+        tanks.push_back(new_tank);
+        blue_tanks.push_back(new_tank);
     }
     //Spawn red tanks
     for (int i = 0; i < NUM_TANKS_RED; i++)
     {
-        tanks.push_back(Tank(start_red_x + ((i % max_rows) * spacing), start_red_y + ((i / max_rows) * spacing), RED, &tank_red, &smoke, 80, 80, tank_radius, TANK_MAX_HEALTH, TANK_MAX_SPEED));
+        Tank new_tank = Tank(start_red_x + ((i % max_rows) * spacing), start_red_y + ((i / max_rows) * spacing), RED, &tank_red, &smoke, 80, 80, tank_radius, TANK_MAX_HEALTH, TANK_MAX_SPEED);
+        tanks.push_back(new_tank);
+        red_tanks.push_back(new_tank);
     }
 
     particle_beams.push_back(Particle_beam(vec2(SCRWIDTH / 2, SCRHEIGHT / 2), vec2(100, 50), &particle_beam_sprite, PARTICLE_BEAM_HIT_VALUE));
@@ -129,9 +133,10 @@ Tank& Game::find_closest_enemy(Tank& current_tank)
 void Game::update(float deltaTime)
 {
     vector<future<void>> tasks;
+
     tasks.push_back(threadpool->enqueue([this] { update_tanks(); }));
     tasks.push_back(threadpool->enqueue([this] { update_rockets(); }));
-
+    update_particle_beams();
 
     //update smoke plumes
     for (Smoke& smoke : smokes)
@@ -139,7 +144,17 @@ void Game::update(float deltaTime)
         smoke.tick();
     }
 
+    //Update explosion sprites and remove when done with remove erase idiom
+    for (Explosion& explosion : explosions)
+    {
+        explosion.tick();
+    }
 
+    explosions.erase(std::remove_if(explosions.begin(), explosions.end(), [](const Explosion& explosion) { return explosion.done(); }), explosions.end());
+}
+
+void Game::update_particle_beams()
+{
     //Update particle beams
     for (Particle_beam& particle_beam : particle_beams)
     {
@@ -157,14 +172,6 @@ void Game::update(float deltaTime)
             }
         }
     }
-
-    //Update explosion sprites and remove when done with remove erase idiom
-    for (Explosion& explosion : explosions)
-    {
-        explosion.tick();
-    }
-
-    explosions.erase(std::remove_if(explosions.begin(), explosions.end(), [](const Explosion& explosion) { return explosion.done(); }), explosions.end());
 }
 
 void Game::update_rockets()

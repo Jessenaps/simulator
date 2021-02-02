@@ -17,6 +17,7 @@ class Game
     void update(float deltaTime);
     void update_tanks();
     void update_rockets();
+    void update_particle_beams();
     void draw();
     void tick(float deltaTime);
     void insertion_sort_tanks_health(const std::vector<Tank>& original, std::vector<const Tank*>& sorted_tanks, int begin, int end);
@@ -50,6 +51,8 @@ class Game
     Surface* screen;
 
     vector<Tank> tanks;
+    vector<Tank> red_tanks;
+    vector<Tank> blue_tanks;
     vector<Rocket> rockets;
     vector<Smoke> smokes;
     vector<Explosion> explosions;
