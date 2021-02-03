@@ -153,9 +153,7 @@ void Game::update(float deltaTime)
             explosions.erase(std::remove_if(explosions.begin(), explosions.end(), [](const Explosion& explosion) { return explosion.done(); }), explosions.end());
         }));
 
-    // Hier hoor je wel op te wachten
-    // Dat is wel netjes
-    // Anders gaan de leraren haten
+
     //for (future<void> &task : tasks)
     //{
     //    task.wait();
