@@ -98,6 +98,7 @@ void Game::shutdown()
 {
 }
 
+
 // -----------------------------------------------------------
 // Iterates through all tanks and returns the closest enemy tank for the given tank
 // -----------------------------------------------------------
@@ -115,12 +116,13 @@ Tank& Game::find_closest_enemy(Tank& current_tank)
             {
                 closest_distance = sqrDist;
                 closest_index = i;
-            }
+            }    Tank& find_closest_enemy(Tank& current_tank);
         }
     }
 
     return tanks.at(closest_index);
 }
+
 
 // -----------------------------------------------------------
 // Update the game state:
@@ -153,14 +155,11 @@ void Game::update(float deltaTime)
             explosions.erase(std::remove_if(explosions.begin(), explosions.end(), [](const Explosion& explosion) { return explosion.done(); }), explosions.end());
         }));
 
-    // Hier hoor je wel op te wachten
-    // Dat is wel netjes
-    // Anders gaan de leraren haten
+
     //for (future<void> &task : tasks)
     //{
     //    task.wait();
     //}
-
 
 }
 
@@ -244,7 +243,6 @@ void Game::update_tanks()
 
             //Move tanks according to speed and nudges (see above) also reload
             tank.tick();
-            //spatial_map[tank.position] = tank;
 
             //Shoot at closest target if reloaded
             if (tank.rocket_reloaded())
